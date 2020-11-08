@@ -2,6 +2,14 @@ var canvas = null;
 var ctx = null;
 var x = 50,
     y = 50;
+window.requestAnimationFrame= (function () {
+  return window.requestAnimationFrame ||
+  window.webjitRequestAnimationFrame ||
+  window.rebkitRequestAnimationFrame ||
+  function (callback) {
+    window.setTimeout(callback,17);
+  };
+}());
 
 function paint (ctx) {
   ctx.fillStyle = '#000';
@@ -19,6 +27,9 @@ function run() {
 
 function act() {
   x+= 2;
+  if(x > canvas.width) {
+    x = 0;
+  }
 }
 
 function init() {
