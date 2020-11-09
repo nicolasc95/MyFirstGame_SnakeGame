@@ -45,7 +45,15 @@
   function random(max) {
     return ~~(Math.random() * max);
     }
-
+  //Audio compatibility
+  function canPlayOgg() {
+    var aud = new Audio();
+    if (aud.canPlayType('audio/ogg').replace(/no/, '')) {
+      return true;
+      } else {
+      return false;
+    }
+  }
   //Rectangle
   function Rectangle(x, y, width, height) {
     this.x = (x === undefined) ? 0 : x;
@@ -239,12 +247,20 @@
     wall.push(new Rectangle (200, 100, 10, 10));
     wall.push(new Rectangle (200, 150, 10, 10));
     //Load assets
+
     iBody.src = 'assets/body.png';
     iHead.src = 'assets/head.png';
     iFood.src = 'assets/fruit.png';
-    aEat.src = 'assets/aeat.wav';
-    aDie.src = 'assets/adie.mp3';
-    aPause.src = 'assets/apause.mp3';
+    if (canPlayOgg()) {
+      aEat.src = 'assets/aeat.oga';
+      aDie.src = 'assets/adie.oga';
+      aPause.src = 'assets/apause.oga';
+      } else {
+      aEat.src = 'assets/aeat.wav';
+      aDie.src = 'assets/adie.mp3';
+      aPause.src = 'assets/apause.mp3';
+      }
+    
     // Start Game
     run();
     repaint();
