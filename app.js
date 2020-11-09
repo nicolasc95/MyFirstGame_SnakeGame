@@ -112,10 +112,8 @@ function paint (ctx) {
     ctx.fillStyle = '#d37c66';
     if(gameOver){
       ctx.fillText('GAME OVER', 150, 100);
-      aDie.play();
     } else {
       ctx.fillText('PAUSE', 150, 100);
-      aPause.play();
     }
     ctx.textAlign = 'left';
   }
@@ -180,6 +178,7 @@ function act() {
       if(body[0].intersects(body[i])) {
         gameOver = true;
         pause = true;
+        aDie.play();
       }
     }
     // Food Intersects
@@ -207,6 +206,7 @@ function act() {
 if (lastPress == keyEnter) {
   pause = !pause;
   lastPress = null;
+  aPause.play();
   }
 }
 
