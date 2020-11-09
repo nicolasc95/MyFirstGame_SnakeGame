@@ -1,6 +1,6 @@
 var canvas = null;
 var ctx = null;
-var player = null;
+var body = new Array();
 var dir = 0;
 var lastPress = null;
 var pause = true;
@@ -14,7 +14,7 @@ var keyLeft= 37,
     keyRight = 39,
     keyDown = 40;
 
-var wall = new Array ();
+//var wall = new Array ();
 
 //compatibility problems of RequestAnimationFrame
 window.requestAnimationFrame = (function () {
@@ -63,37 +63,41 @@ function Rectangle(x, y, width, height) {
 function reset() {
   score = 0;
   dir = 1;
-  player.x = 40;
-  player.y = 40;
+  body.length = 0;
+  body.push(new Rectangle(40, 40, 10, 10));
+  body.push(new Rectangle(0, 0, 10, 10));
+  body.push(new Rectangle(0, 0, 10, 10));
   food.x = random(canvas.width / 10-1) * 10;
   food.y = random(canvas.height / 10-1) * 10;
   gameOver = false;
 }
 
-//Paint
+//DRAWINGS
 function paint (ctx) {
   //Canvas
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  //Player 
+  //Player - Head
   ctx.fillStyle = '#c89483';
-  player.fill(ctx);
+  for (i = 0, l = body.length; i < l ; i++) {
+    body[i].fill(ctx);
+  }
   //Food
   ctx.fillStyle = '#c8cfd6';
   food.fill(ctx);
-  //Draw walls
+  /*//Walls
   ctx.fillStyle = '#999';
   for (i=0, l = wall.length; i < l ; i++) {
     wall[i].fill(ctx);
-  }
-  // Draw score
+  }*/
+  // Score
   ctx.fillStyle = '#d37c66';
   ctx.fillText('Score: ' + score, 0, 10);
   //Last Key pressed
   //ctx.fillStyle = '#fff';
   //ctx.fillText('Last Press: ' + lastPress, 0, 20);
 
-  //Draw pause
+  //Pause
   if (pause) {
     ctx.textAlign = 'center';
     ctx.fillStyle = '#d37c66';
@@ -112,64 +116,79 @@ function act() {
     if (gameOver) {
       reset();
     }
+    
+    //Move body
+    for (i = body.length - 1; i > 0 ; i--) {
+      body[i].x = body[i-1].x;
+      body[i].y = body[i-1].y;
+    }
+
     //Change Direction
-    if (lastPress == keyUp) {
+    if (lastPress == keyUp && dir != 2) {
       dir = 0;
     }
-    if (lastPress == keyRight) {
+    if (lastPress == keyRight && dir != 3) {
       dir = 1;
     }
-    if (lastPress == keyDown) {
+    if (lastPress == keyDown && dir != 0) {
       dir = 2;
     }
-    if (lastPress == keyLeft) {
+    if (lastPress == keyLeft && dir != 1) {
       dir = 3;
     }
 
     //Move Rect
     if (dir == 0) {
-      player.y -= 5;
+      body[0].y -= 10;
     }
     if (dir == 1) {
-      player.x += 5;
+      body[0].x += 10;
     }
     if (dir == 2) {
-      player.y += 5;
+      body[0].y += 10;
     }
     if (dir == 3) {
-      player.x -= 5;
+      body[0].x -= 10;
     }
 
     //Out Screen
-    if (player.x > canvas.width) {
-      player.x = 0;
+    if (body[0].x > canvas.width - body[0].width) {
+      body[0].x = 0;
     }
-    if (player.y > canvas.height) {
-      player.y = 0;
+    if (body[0].y > canvas.height - body[0].height) {
+      body[0].y = 0;
     }
-    if (player.x < 0) {
-      player.x = canvas.width;
+    if (body[0].x < 0) {
+      body[0].x = canvas.width - body[0].width;
     }
-    if (player.y < 0) {
-      player.y = canvas.height;
+    if (body[0].y < 0) {
+      body[0].y = canvas.height - body[0].height;
+    }
+    //Body Intersects
+    for (i = 2, l = body.length; i < l; i++) {
+      if(body[0].intersects(body[i])) {
+        gameOver = true;
+        pause = true;
+      }
     }
     // Food Intersects
-    if (player.intersects(food)) {
-      score += 1;
-      food.x = random(canvas.width / 10 - 1) * 10;
-      food.y = random(canvas.height / 10 - 1) * 10;
-      }
-    //Wall Intersects
+    if (body[0].intersects(food)) {
+    body.push(new Rectangle(food.x, food.y, 10, 10));
+    score += 1;
+    food.x = random(canvas.width / 10 - 1) * 10;
+    food.y = random(canvas.height / 10 - 1) * 10;
+    }
+    /*//Wall Intersects
     for (i = 0, l = wall.length; i < l; i++) {
       if(food.intersects(wall[i])) {
         food.x = random(canvas.width / 10-1) * 10;
         food.y = random(canvas.height / 10-1) * 10;
       }
-      if(player.intersects(wall[i])) {
+      if(body[0].intersects(wall[i])) {
         pause = true;
         gameOver = true;
       }
-    }
+    }*/
   }
 
 // Pause/Unpause
@@ -194,17 +213,19 @@ function run () {
 function init() {
   canvas = document.getElementById('canvas');
   ctx = canvas.getContext('2d');
-  //Player
-  player = new Rectangle(40, 40, 10, 10);
+  //Player - Head
+  body[0] = new Rectangle(40, 40, 10, 10);
   //Food
   food = new Rectangle(80, 80, 10, 10)
-  //Walls
+  /*//Walls
   wall.push(new Rectangle (100, 50, 10, 10));
   wall.push(new Rectangle (100, 100, 10, 10));
   wall.push(new Rectangle (100, 150, 10, 10));
   wall.push(new Rectangle (200, 50, 10, 10));
   wall.push(new Rectangle (200, 100, 10, 10));
-  wall.push(new Rectangle (200, 150, 10, 10));
+  wall.push(new Rectangle (200, 150, 10, 10));*/
+
+  // Start Game
   run();
   repaint();
 }
