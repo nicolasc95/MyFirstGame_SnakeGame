@@ -12,6 +12,10 @@ var score = 0;
 var iBody = new Image();
 var iHead = new Image();
 var iFood = new Image();
+//audio variables
+var aEat = new Audio();
+var aDie = new Audio();
+var aPause = new Audio();
 
 //movement variables
 var keyEnter = 13;
@@ -108,8 +112,10 @@ function paint (ctx) {
     ctx.fillStyle = '#d37c66';
     if(gameOver){
       ctx.fillText('GAME OVER', 150, 100);
+      aDie.play();
     } else {
       ctx.fillText('PAUSE', 150, 100);
+      aPause.play();
     }
     ctx.textAlign = 'left';
   }
@@ -182,6 +188,7 @@ function act() {
     score += 1;
     food.x = random(canvas.width / 10 - 1) * 10;
     food.y = random(canvas.height / 10 - 1) * 10;
+    aEat.play();
     }
     /*//Wall Intersects
     for (i = 0, l = wall.length; i < l; i++) {
@@ -233,6 +240,9 @@ function init() {
   iBody.src = 'assets/body.png';
   iHead.src = 'assets/head.png';
   iFood.src = 'assets/fruit.png';
+  aEat.src = 'assets/aeat.wav';
+  aDie.src = 'assets/adie.mp3';
+  aPause.src = 'assets/apause.mp3';
   // Start Game
   run();
   repaint();
