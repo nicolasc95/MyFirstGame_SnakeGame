@@ -1,16 +1,17 @@
 /*jslint bitwise:true, es5: true */
-(function (window, undefined) {
+(function (window, undefined){
+  'use strict';
   //General Variables
-  var canvas = undefined;
-  var ctx = undefined;
+  var canvas = null;
+  var ctx = null;
   var body = [];
   var dir = 0;
-  var lastPress = undefined;
+  var lastPress = null;
   var pause = true;
   var gameOver = true;
   var score = 0;
   var wall = [];
-
+  var food = null;
   //image variables
   var iBody = new Image();
   var iHead = new Image();
@@ -60,24 +61,36 @@
     this.y = (y === undefined) ? 0 : y;
     this.width = (width === undefined) ? 0 : width;
     this.height = (height === undefined) ? this.width : height;
-    this.intersects = function (rect) {
-      if (rect === undefined) {
-        window.console.warn('Missing parameters on function intersects');
-        } else {
-        return (this.x < rect.x + rect.width &&
-        this.x + this.width > rect.x &&
-        this.y < rect.y + rect.height &&
-        this.y + this.height > rect.y);
-      }
-    };
-    this.fill = function (ctx) {
-      if (ctx === undefined) {
-        window.console.warn('Missing parameters on function fill');
-        } else {
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-      }
-    };
   }
+  Rectangle.prototype.intersects = function (rect) {
+    if (rect === undefined) {
+      window.console.warn('Missing parameters on function intersects');
+      } else {
+      return (this.x < rect.x + rect.width &&
+      this.x + this.width > rect.x &&
+      this.y < rect.y + rect.height &&
+      this.y + this.height > rect.y);
+    }
+  };
+  Rectangle.prototype.fill = function (ctx) {
+    if (ctx === undefined) {
+      window.console.warn('Missing parameters on function fill');
+      } else {
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+  };
+  Rectangle.prototype.drawImage = function (ctx, img) {
+    if (img === undefined) {
+      window.console.warn('Missing parameters on function drawImage');
+      } else {
+      if (img.width) {
+      ctx.drawImage(img, this.x, this.y);
+      } else {
+      ctx.strokeRect(this.x, this.y, this.width, this.height);
+      }
+    }
+  };
+  
   // Reset Function 
   function reset() {
     score = 0;
@@ -93,6 +106,8 @@
 
   //DRAWINGS
   function paint (ctx) {
+    var i = 0;
+    var l = 0;
     //Canvas
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -129,6 +144,8 @@
   }
 
   function act() {
+    var i = 0;
+    var l = 0;
     if (!pause) {
       //Game Over Reset
       if (gameOver) {
@@ -267,4 +284,4 @@
   }
 
   window.addEventListener('load', init, false);
-}(window));
+} (window)) ;
