@@ -4,6 +4,7 @@ var player = null;
 var dir = 0;
 var lastPress = null;
 var pause = true;
+var gameOver = true;
 
 var score = 0;
 
@@ -58,6 +59,17 @@ function Rectangle(x, y, width, height) {
     }
   };
 }
+// Reset Function 
+function reset() {
+  score = 0;
+  dir = 1;
+  player.x = 40;
+  player.y = 40;
+  food.x = random(canvas.width / 10-1) * 10;
+  food.y = random(canvas.height / 10-1) * 10;
+  gameOver = false;
+}
+
 //Paint
 function paint (ctx) {
   //Canvas
@@ -85,13 +97,21 @@ function paint (ctx) {
   if (pause) {
     ctx.textAlign = 'center';
     ctx.fillStyle = '#d37c66';
-    ctx.fillText('PAUSE', 150, 75);
-    ctx.textAlign = 'left';
+    if(gameOver){
+      ctx.fillText('GAME OVER', 150, 100);
+    } else {
+      ctx.fillText('PAUSE', 150, 100);
     }
+    ctx.textAlign = 'left';
+  }
 }
 
 function act() {
   if (!pause) {
+    //Game Over Reset
+    if (gameOver) {
+      reset();
+    }
     //Change Direction
     if (lastPress == keyUp) {
       dir = 0;
@@ -147,6 +167,7 @@ function act() {
       }
       if(player.intersects(wall[i])) {
         pause = true;
+        gameOver = true;
       }
     }
   }
