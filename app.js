@@ -1,3 +1,4 @@
+//General Variables
 var canvas = null;
 var ctx = null;
 var body = new Array();
@@ -5,9 +6,14 @@ var dir = 0;
 var lastPress = null;
 var pause = true;
 var gameOver = true;
-
 var score = 0;
 
+//image variables
+var iBody = new Image();
+var iHead = new Image();
+var iFood = new Image();
+
+//movement variables
 var keyEnter = 13;
 var keyLeft= 37,
     keyUp = 38,
@@ -78,13 +84,12 @@ function paint (ctx) {
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   //Player - Head
-  ctx.fillStyle = '#c89483';
   for (i = 0, l = body.length; i < l ; i++) {
-    body[i].fill(ctx);
+    ctx.drawImage(iBody, body[i].x, body[i].y);
   }
+    ctx.drawImage(iHead, body[0].x, body[0].y);
   //Food
-  ctx.fillStyle = '#c8cfd6';
-  food.fill(ctx);
+  ctx.drawImage(iFood, food.x, food.y);
   /*//Walls
   ctx.fillStyle = '#999';
   for (i=0, l = wall.length; i < l ; i++) {
@@ -224,7 +229,10 @@ function init() {
   wall.push(new Rectangle (200, 50, 10, 10));
   wall.push(new Rectangle (200, 100, 10, 10));
   wall.push(new Rectangle (200, 150, 10, 10));*/
-
+  //Load assets
+  iBody.src = 'assets/body.png';
+  iHead.src = 'assets/head.png';
+  iFood.src = 'assets/fruit.png';
   // Start Game
   run();
   repaint();
