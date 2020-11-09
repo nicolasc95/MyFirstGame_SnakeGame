@@ -13,6 +13,8 @@ var keyLeft= 37,
     keyRight = 39,
     keyDown = 40;
 
+var wall = new Array ();
+
 //compatibility problems of RequestAnimationFrame
 window.requestAnimationFrame = (function () {
   return window.requestAnimationFrame ||
@@ -65,8 +67,13 @@ function paint (ctx) {
   ctx.fillStyle = '#c89483';
   player.fill(ctx);
   //Food
-  ctx.fillStyle = '#95a1ac';
+  ctx.fillStyle = '#c8cfd6';
   food.fill(ctx);
+  //Draw walls
+  ctx.fillStyle = '#999';
+  for (i=0, l = wall.length; i < l ; i++) {
+    wall[i].fill(ctx);
+  }
   // Draw score
   ctx.fillStyle = '#d37c66';
   ctx.fillText('Score: ' + score, 0, 10);
@@ -127,11 +134,21 @@ function act() {
       player.y = canvas.height;
     }
     // Food Intersects
-if (player.intersects(food)) {
-  score += 1;
-  food.x = random(canvas.width / 10 - 1) * 10;
-  food.y = random(canvas.height / 10 - 1) * 10;
-  }
+    if (player.intersects(food)) {
+      score += 1;
+      food.x = random(canvas.width / 10 - 1) * 10;
+      food.y = random(canvas.height / 10 - 1) * 10;
+      }
+    //Wall Intersects
+    for (i = 0, l = wall.length; i < l; i++) {
+      if(food.intersects(wall[i])) {
+        food.x = random(canvas.width / 10-1) * 10;
+        food.y = random(canvas.height / 10-1) * 10;
+      }
+      if(player.intersects(wall[i])) {
+        pause = true;
+      }
+    }
   }
 
 // Pause/Unpause
@@ -158,7 +175,15 @@ function init() {
   ctx = canvas.getContext('2d');
   //Player
   player = new Rectangle(40, 40, 10, 10);
+  //Food
   food = new Rectangle(80, 80, 10, 10)
+  //Walls
+  wall.push(new Rectangle (100, 50, 10, 10));
+  wall.push(new Rectangle (100, 100, 10, 10));
+  wall.push(new Rectangle (100, 150, 10, 10));
+  wall.push(new Rectangle (200, 50, 10, 10));
+  wall.push(new Rectangle (200, 100, 10, 10));
+  wall.push(new Rectangle (200, 150, 10, 10));
   run();
   repaint();
 }
