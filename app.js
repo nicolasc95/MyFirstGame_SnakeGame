@@ -35,6 +35,7 @@
   var x = 50, 
       y = 50;
   var deltaTime = 0;
+ 
   //compatibility problems of RequestAnimationFrame
   window.requestAnimationFrame = (function () {
     return window.requestAnimationFrame ||
@@ -272,6 +273,14 @@
     act();
   }
 
+   //Resize canvas 
+   function resize (){
+   var w = window.innerWidth / canvas.width;
+   var h = window.innerHeight / canvas.height;
+   var scale = Math.min(h, w);
+   canvas.style.width = (canvas.width * scale) + 'px';
+   canvas.style.height = (canvas.height * scale) + 'px';
+   }
   //Canvas init
   function init() {
     canvas = document.getElementById('canvas');
@@ -303,9 +312,11 @@
       }
     
     // Start Game
+    resize();
     run();
     repaint();
   }
-
+  
   window.addEventListener('load', init, false);
+  window.addEventListener('resize', resize, false);
 } (window)) ;
