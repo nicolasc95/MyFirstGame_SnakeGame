@@ -243,9 +243,12 @@
     paint(ctx);
   }
 
-  function run () {
-    setTimeout(run, 50);
+  function run(){
+    setTimeout(function() {
+      window.requestAnimationFrame(run);
+    }, 50);
     act();
+    paint(ctx);
   }
 
   //Canvas init
