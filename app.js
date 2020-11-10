@@ -35,7 +35,12 @@
   var x = 50, 
       y = 50;
   var deltaTime = 0;
- 
+ //Buffer variables
+  var buffer = null;
+  var bufferCtx = null;
+  var bufferScale = 1;
+  var bufferOffsetX = 0;
+  var bufferOffsetY = 0;
   //compatibility problems of RequestAnimationFrame
   window.requestAnimationFrame = (function () {
     return window.requestAnimationFrame ||
@@ -107,8 +112,8 @@
     body.push(new Rectangle(40, 40, 10, 10));
     body.push(new Rectangle(0, 0, 10, 10));
     body.push(new Rectangle(0, 0, 10, 10));
-    food.x = random(canvas.width / 10-1) * 10;
-    food.y = random(canvas.height / 10-1) * 10;
+    food.x = random(buffer.width / 10-1) * 10;
+    food.y = random(buffer.height / 10-1) * 10;
     gameOver = false;
   }
 
@@ -116,30 +121,33 @@
   function paint (ctx) {
     var i = 0;
     var l = 0;
+    
     //Canvas
     ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, buffer.width, buffer.height);
+
     //Player - Head
     for (i = 0, l = body.length; i < l ; i++) {
       ctx.drawImage(iBody, body[i].x, body[i].y);
     }
       ctx.drawImage(iHead, body[0].x, body[0].y);
+
     //Food
     ctx.drawImage(iFood, food.x, food.y);
+
     //Walls
     ctx.fillStyle = '#999';
     for (i=0, l = wall.length; i < l ; i++) {
       wall[i].fill(ctx);
     }
+
     // Score
     ctx.fillStyle = '#d37c66';
     ctx.fillText('Score: ' + score, 0, 10);
+
     //FPS
     ctx.fillStyle = '#d37c66';
     ctx.fillText('FPS: ' + FPS, 250, 10);
-    //Last Key pressed
-    //ctx.fillStyle = '#fff';
-    //ctx.fillText('Last Press: ' + lastPress, 0, 20);
 
     //Pause
     if (pause) {
@@ -198,17 +206,17 @@
       }
 
       //Out Screen
-      if (body[0].x > canvas.width - body[0].width) {
+      if (body[0].x > buffer.width - body[0].width) {
         body[0].x = 0;
       }
-      if (body[0].y > canvas.height - body[0].height) {
+      if (body[0].y > buffer.height - body[0].height) {
         body[0].y = 0;
       }
       if (body[0].x < 0) {
-        body[0].x = canvas.width - body[0].width;
+        body[0].x = buffer.width - body[0].width;
       }
       if (body[0].y < 0) {
-        body[0].y = canvas.height - body[0].height;
+        body[0].y = buffer.height - body[0].height;
       }
       //Body Intersects
       for (i = 2, l = body.length; i < l; i++) {
@@ -222,15 +230,15 @@
       if (body[0].intersects(food)) {
       body.push(new Rectangle(food.x, food.y, 10, 10));
       score += 1;
-      food.x = random(canvas.width / 10 - 1) * 10;
-      food.y = random(canvas.height / 10 - 1) * 10;
+      food.x = random(buffer.width / 10 - 1) * 10;
+      food.y = random(buffer.height / 10 - 1) * 10;
       aEat.play();
       }
       //Wall Intersects
       for (i = 0, l = wall.length; i < l; i++) {
         if(food.intersects(wall[i])) {
-          food.x = random(canvas.width / 10-1) * 10;
-          food.y = random(canvas.height / 10-1) * 10;
+          food.x = random(buffer.width / 10-1) * 10;
+          food.y = random(buffer.height / 10-1) * 10;
         }
         if(body[0].intersects(wall[i])) {
           pause = true;
@@ -251,7 +259,12 @@
   //Refresh
   function repaint () {
     window.requestAnimationFrame(repaint);
-    paint(ctx);
+    paint(bufferCtx);
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(buffer, bufferOffsetX, bufferOffsetY, buffer.width * bufferScale, buffer.height * bufferScale);
   }
 
   function run() {
@@ -274,21 +287,36 @@
   }
 
    //Resize canvas 
-   function resize (){
-   var w = window.innerWidth / canvas.width;
-   var h = window.innerHeight / canvas.height;
-   var scale = Math.min(h, w);
-   canvas.style.width = (canvas.width * scale) + 'px';
-   canvas.style.height = (canvas.height * scale) + 'px';
+  function resize (){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    var w = window.innerWidth / buffer.width;
+    var h = window.innerHeight / buffer.height;
+    bufferScale = Math.min(h, w);
+
+    bufferOffsetX = (canvas.width - (buffer.width * bufferScale)) / 2;
+    bufferOffsetY = (canvas.height - (buffer.height * bufferScale)) / 2;
    }
-  //Canvas init
+
+  //Init
   function init() {
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
+    canvas.width = 600;
+    canvas.height = 400;  
+
+    //Buffer
+    buffer = document.createElement('canvas');
+    bufferCtx = buffer.getContext('2d');
+    buffer.width = 300;
+    buffer.height = 200;
     //Player - Head
     body[0] = new Rectangle(40, 40, 10, 10);
+
     //Food
     food = new Rectangle(80, 80, 10, 10)
+
     //Walls
     wall.push(new Rectangle (100, 50, 10, 10));
     wall.push(new Rectangle (100, 100, 10, 10));
