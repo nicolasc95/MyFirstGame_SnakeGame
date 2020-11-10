@@ -27,7 +27,14 @@
       keyUp = 38,
       keyRight = 39,
       keyDown = 40;
-
+  //RAF deltaTime variables
+  var lastUpdate = 0;
+  var FPS = 0;
+  var frames = 0;
+  var acumDelta = 0;
+  var x = 50, 
+      y = 50;
+  var deltaTime = 0;
   //compatibility problems of RequestAnimationFrame
   window.requestAnimationFrame = (function () {
     return window.requestAnimationFrame ||
@@ -126,6 +133,9 @@
     // Score
     ctx.fillStyle = '#d37c66';
     ctx.fillText('Score: ' + score, 0, 10);
+    //FPS
+    ctx.fillStyle = '#d37c66';
+    ctx.fillText('FPS: ' + FPS, 250, 10);
     //Last Key pressed
     //ctx.fillStyle = '#fff';
     //ctx.fillText('Last Press: ' + lastPress, 0, 20);
@@ -243,12 +253,23 @@
     paint(ctx);
   }
 
-  function run(){
-    setTimeout(function() {
-      window.requestAnimationFrame(run);
-    }, 50);
+  function run() {
+    setTimeout(run, 50);
+    var now = Date.now(),
+      deltaTime = (now - lastUpdate) / 1000;
+    if (deltaTime > 1) {
+      deltaTime = 0;
+    }
+    lastUpdate = now;
+
+    frames += 1;
+    acumDelta += deltaTime;
+    if (acumDelta > 1) {
+      FPS = frames;
+      frames = 0;
+      acumDelta -= 1;
+    }
     act();
-    paint(ctx);
   }
 
   //Canvas init
