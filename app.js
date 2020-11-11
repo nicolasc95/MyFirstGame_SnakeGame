@@ -20,7 +20,6 @@
   var aEat = new Audio();
   var aDie = new Audio();
   var aPause = new Audio();
-
   //movement variables
   var keyEnter = 13;
   var keyLeft = 37,
@@ -32,15 +31,17 @@
   var FPS = 0;
   var frames = 0;
   var acumDelta = 0;
-  var x = 50, 
-      y = 50;
-  var deltaTime = 0;
  //Buffer variables
   var buffer = null;
   var bufferCtx = null;
   var bufferScale = 1;
   var bufferOffsetX = 0;
   var bufferOffsetY = 0;
+  //Scene variables
+  var currentScene = 0;
+  var scenes = [];
+  var mainScene = null;
+  var gameScene = null;
   //compatibility problems of RequestAnimationFrame
   window.requestAnimationFrame = (function () {
     return window.requestAnimationFrame ||
@@ -68,6 +69,42 @@
       return false;
     }
   }
+  //Change Scene
+  function Scene() {
+    this.id = scenes.length;
+    scenes.push(this);
+  }
+  Scene.prototype = {
+    constructor: Scene,
+    load: function () {},
+    paint: function (ctx) {},
+    act: function () {}
+  };
+  function loadScene(scene) {
+    currentScene = scene.id;
+    scenes[currentScene].load();
+  }
+
+  // Main Scene
+  mainScene = new Scene();
+  mainScene.paint = function (ctx) {
+    // Clean canvas
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Draw title
+    ctx.fillStyle = '#d37c66';
+    ctx.textAlign = 'center';
+    ctx.fillText('SNAKE', 150, 60);
+    ctx.fillText('Press Enter to Start', 150, 120);
+  };
+  mainScene.act = function () {
+    // Load next scene
+    if (lastPress === keyEnter) {
+      loadScene(gameScene);
+      lastPress = null;
+    }
+  };
+
   //Rectangle
   function Rectangle(x, y, width, height) {
     this.x = (x === undefined) ? 0 : x;
@@ -103,9 +140,47 @@
       }
     }
   };
-  
+
+  //Run
+  function run() {
+    setTimeout(run, 50);
+    if (scenes.length) {
+      scenes[currentScene].act();
+      }
+    var now = Date.now(),
+      deltaTime = (now - lastUpdate) / 1000;
+    if (deltaTime > 1) {
+      deltaTime = 0;
+    }
+    lastUpdate = now;
+
+    frames += 1;
+    acumDelta += deltaTime;
+    if (acumDelta > 1) {
+      FPS = frames;
+      frames = 0;
+      acumDelta -= 1;
+    }
+  }
+
+  //Refresh
+  function repaint () {
+    window.requestAnimationFrame(repaint);
+    if (scenes.length) {
+      scenes[currentScene].paint(bufferCtx);
+      }
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(buffer, bufferOffsetX, bufferOffsetY, buffer.width * bufferScale, buffer.height * bufferScale);
+  }
+
+  // Game Scene
+  gameScene = new Scene();
+
   // Reset Function 
-  function reset() {
+  gameScene.load = function () {
     score = 0;
     dir = 1;
     body.length = 0;
@@ -118,7 +193,7 @@
   }
 
   //DRAWINGS
-  function paint (ctx) {
+  gameScene.paint = function (ctx) {
     var i = 0;
     var l = 0;
     
@@ -162,13 +237,13 @@
     }
   }
 
-  function act() {
+  gameScene.act = function () {
     var i = 0;
     var l = 0;
     if (!pause) {
       //Game Over Reset
       if (gameOver) {
-        reset();
+        loadScene(gameScene);
       }
       
       //Move body
@@ -256,36 +331,6 @@
     }
   }
 
-  //Refresh
-  function repaint () {
-    window.requestAnimationFrame(repaint);
-    paint(bufferCtx);
-
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(buffer, bufferOffsetX, bufferOffsetY, buffer.width * bufferScale, buffer.height * bufferScale);
-  }
-
-  function run() {
-    setTimeout(run, 50);
-    var now = Date.now(),
-      deltaTime = (now - lastUpdate) / 1000;
-    if (deltaTime > 1) {
-      deltaTime = 0;
-    }
-    lastUpdate = now;
-
-    frames += 1;
-    acumDelta += deltaTime;
-    if (acumDelta > 1) {
-      FPS = frames;
-      frames = 0;
-      acumDelta -= 1;
-    }
-    act();
-  }
-
    //Resize canvas 
   function resize (){
     canvas.width = window.innerWidth;
@@ -297,7 +342,7 @@
 
     bufferOffsetX = (canvas.width - (buffer.width * bufferScale)) / 2;
     bufferOffsetY = (canvas.height - (buffer.height * bufferScale)) / 2;
-   }
+  }
 
   //Init
   function init() {
