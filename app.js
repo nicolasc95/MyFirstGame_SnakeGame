@@ -12,10 +12,13 @@
   var score = 0;
   var wall = [];
   var food = null;
+  var extraFood = null;
+  var tExtraFood = 0;
   //image variables
   var iBody = new Image();
   var iHead = new Image();
   var iFood = new Image();
+  var iExtraFood = new Image();
   //audio variables
   var aEat = new Audio();
   var aDie = new Audio();
@@ -193,6 +196,9 @@
     body.push(new Rectangle(0, 0, 10, 10));
     food.x = random(buffer.width / 10-1) * 10;
     food.y = random(buffer.height / 10-1) * 10;
+    tExtraFood = Date.now() + 1000*(5 + random(10));
+    extraFood.x = random(buffer.width / 10-1) * 10;
+    extraFood.y = random(buffer.height / 10-1) * 10;
     gameOver = false;
   }
 
@@ -213,7 +219,11 @@
 
     //Food
     ctx.drawImage(iFood, food.x, food.y);
-
+    // ExtraFood
+    ctx.fillStyle = '#ff0';
+    if((Date.now() > tExtraFood)){
+        extraFood.drawImage(ctx,iExtraFood);
+    }
     //Walls
     ctx.fillStyle = '#999';
     for (i=0, l = wall.length; i < l ; i++) {
@@ -314,20 +324,41 @@
       food.y = random(buffer.height / 10 - 1) * 10;
       aEat.play();
       }
+      //ExtraFood Intersects
+      if ((body[0].intersects(extraFood)) && (Date.now() > tExtraFood)) {
+        score += 5;
+        postScore(score);
+        extraFood.x = random(buffer.width / 10 - 1) * 10;
+        extraFood.y = random(buffer.height / 10 - 1) * 10;
+        aEat.play();
+        tExtraFood = Date.now() + 1000*(5 + random(10));
+      }
       //Wall Intersects
       for (i = 0, l = wall.length; i < l; i++) {
         if(food.intersects(wall[i])) {
           food.x = random(buffer.width / 10-1) * 10;
           food.y = random(buffer.height / 10-1) * 10;
         }
+        if (extraFood.intersects(wall[i])) {
+          extraFood.x = random(buffer.width / 10 - 1) * 10;
+          extraFood.y = random(buffer.height / 10 - 1) * 10;
+        }  
         if(body[0].intersects(wall[i])) {
           pause = true;
           gameOver = true;
           aDie.play();
         }
       }
-    }
-
+    }else{
+      tExtraFood = Date.now() + 1000*(5 + random(10));
+  }
+  //postScore
+  function postScore(){
+    fetch(`https://jsonplaceholder.typicode.com/posts/1?score=${score}`)
+      .then((response) => response.json())
+      .then((status) => console.log("Score sent successfully"))
+      .catch((error) => console.log("Error trying to send the score"))
+  }
   // Pause/Unpause
   if (lastPress === keyEnter) {
     pause = !pause;
@@ -409,7 +440,7 @@
 
     //Food
     food = new Rectangle(80, 80, 10, 10)
-
+    extraFood = new Rectangle (-10, -10, 10, 10)
     //Walls
     wall.push(new Rectangle (100, 50, 10, 10));
     wall.push(new Rectangle (100, 100, 10, 10));
@@ -422,6 +453,7 @@
     iBody.src = 'assets/body.png';
     iHead.src = 'assets/head.png';
     iFood.src = 'assets/fruit.png';
+    iExtraFood.src = 'assets/extraFood.png';
     if (canPlayOgg()) {
       aEat.src = 'assets/aeat.oga';
       aDie.src = 'assets/adie.oga';
