@@ -42,6 +42,10 @@
   var scenes = [];
   var mainScene = null;
   var gameScene = null;
+  var highscoresScene = null;
+  //HighScores
+  var highscores = [];
+  var posHighscore = 10;
   //compatibility problems of RequestAnimationFrame
   window.requestAnimationFrame = (function () {
     return window.requestAnimationFrame ||
@@ -243,7 +247,8 @@
     if (!pause) {
       //Game Over Reset
       if (gameOver) {
-        loadScene(gameScene);
+        addHighscore(score);
+        loadScene(highscoresScene);
       }
       
       //Move body
@@ -344,6 +349,49 @@
     bufferOffsetY = (canvas.height - (buffer.height * bufferScale)) / 2;
   }
 
+  //HighScores  
+  function addHighscore(score) {
+    posHighscore = 0;
+    while (highscores[posHighscore] > score && posHighscore < highscores.length) {
+      posHighscore += 1;
+    }
+    highscores.splice(posHighscore, 0, score);
+    if (highscores.length > 10) {
+      highscores.length = 10;
+    }
+    localStorage.highscores = highscores.join(',');
+  }
+
+  // Highscore Scene
+  highscoresScene = new Scene();
+  highscoresScene.paint = function (ctx) {
+    var i = 0;
+    var l = 0;
+    // Clean canvas
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, buffer.width, buffer.height);
+    // Draw title
+    ctx.fillStyle = '#d37c66';
+    ctx.textAlign = 'center';
+    ctx.fillText('HIGH SCORES', 150, 30);
+    // Draw high scores
+    ctx.textAlign = 'center';
+    for (i = 0, l = highscores.length; i < l; i += 1) {
+      if (i === posHighscore) {
+        ctx.fillText('*' + highscores[i], 180, 40 + i * 10);
+      } else {
+        ctx.fillText(highscores[i], 180, 40 + i * 10);
+      }
+    }
+  };
+  highscoresScene.act = function () {
+    // Load next scene
+    if (lastPress === keyEnter) {
+      loadScene(gameScene);
+      lastPress = null;
+    }
+  };
+
   //Init
   function init() {
     canvas = document.getElementById('canvas');
@@ -383,7 +431,10 @@
       aDie.src = 'assets/adie.mp3';
       aPause.src = 'assets/apause.mp3';
       }
-    
+    //Load saved highscores
+    if (localStorage.highscores) {
+      highscores = localStorage.highscores.split(',');
+    }
     // Start Game
     resize();
     run();
