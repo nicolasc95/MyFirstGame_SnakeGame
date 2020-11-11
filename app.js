@@ -354,10 +354,20 @@
   }
   //postScore
   function postScore(){
-    fetch(`https://jsonplaceholder.typicode.com/posts/1?score=${score}`)
+    fetch(`https://jsonplaceholder.typicode.com/posts?score=${score}`,{
+      method: 'POST',
+      body: JSON.stringify({
+        title: 'foo',
+        body: 'bar',
+        userId: 1,
+      }),
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+      },
+    })
       .then((response) => response.json())
-      .then((status) => console.log("Score sent successfully"))
-      .catch((error) => console.log("Error trying to send the score"))
+      .then((json) => console.log('Successfully response'))
+      .catch((error) => console.log('Invalid request'))
   }
   // Pause/Unpause
   if (lastPress === keyEnter) {
